@@ -119,7 +119,7 @@ const routes = [
 
     // Instructor - Section Student Routes
     {
-        path: '/instructor/section/:id',
+        path: '/instructor/info/:section_id/:subject_id/:school_year_id',
         name: 'instructorSectionStudent',
         component: () => import(/* webpackChunkName: "components-tabs" */ '../views/master/instructor/assign/student.vue'),
         meta: {

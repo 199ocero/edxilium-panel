@@ -19,7 +19,7 @@
     <div class="row layout-top-spacing">
       <div class="col-xl-12 col-lg-12 col-sm-12 layout-spacing">
         <div class="seperator-header">
-          <h4>View Student List in Section {{ form.sectionName }}</h4>
+          <h4>View Student List in Section {{ form.sectionName }} and Subject {{ form.subjectName }}</h4>
         </div>
         <div class="panel br-6 p-0">
           <div class="custom-table">
@@ -70,7 +70,12 @@
               :show-empty="true"
               @filtered="on_filtered"
             >
-              <template #cell(action)>
+              <template #cell(status)="data">
+                <b-badge variant="primary" v-if="data.item.status == 'Regular'"> Regular </b-badge>
+                <b-badge variant="secondary" v-else> Irregular </b-badge>
+              </template>
+              <template #cell(action)="data">
+                <b-button size="sm mr-3" pill variant="secondary" v-if="data.item.status == 'Irregular'">Remove</b-button>
                 <b-button size="sm" pill variant="danger">Drop</b-button>
               </template>
             </b-table>
@@ -142,8 +147,11 @@ export default {
         gender: '',
         contact_number: '',
         email: '',
-        sectionID: this.$route.params.id,
+        sectionID: this.$route.params.section_id,
+        subjectID: this.$route.params.subject_id,
+        school_yearID: this.$route.params.school_year_id,
         sectionName: '',
+        subjectName: '',
       },
       errors: new Errors(),
       items: [],
@@ -166,13 +174,14 @@ export default {
   created() {
     // console.log(id);
     this.$http
-      .get('/api/assigned/section/' + this.form.sectionID, {
+      .get(`/api/assigned/info/${this.form.sectionID}/${this.form.subjectID}/${this.form.school_yearID}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       })
       .then((response) => {
-        this.form.sectionName = response.data.data.section;
+        this.form.sectionName = response.data.data.section.section;
+        this.form.subjectName = response.data.data.subject.subject;
       })
       .catch(() => {});
   },
@@ -187,16 +196,17 @@ export default {
         { key: 'gender', label: 'Gender' },
         { key: 'contact_number', label: 'Contact Number' },
         { key: 'email', label: 'Email' },
+        { key: 'status', label: 'Status' },
         { key: 'action', label: 'Actions', class: 'actions text-center' },
       ];
       let fetchTodo = async () => {
         this.items = [];
-        if (this.$route.params.id == 'undefined') {
+        if (this.$route.params.section_id == 'undefined') {
           this.$swal.fire('Not Found!', 'Please choose a section.', 'warning');
           this.$router.push({ name: 'instructorAssign' });
         } else {
           this.$http
-            .get('/api/assigned/student-section/' + this.$route.params.id, {
+            .get(`/api/assigned/student-section/${this.form.sectionID}/${this.form.subjectID}`, {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
               },

@@ -72,7 +72,14 @@
             >
               <template #cell(section)="data">
                 <span v-if="data.item.section == null">Deleted</span>
-                <b-button v-else size="sm mr-3" pill variant="primary" :to="{ name: 'instructorSectionStudent', params: { id: data.item.section_id } }">{{ data.item.section['section'] }}</b-button>
+                <b-button
+                  v-else
+                  size="sm mr-3"
+                  pill
+                  variant="primary"
+                  :to="{ name: 'instructorSectionStudent', params: { section_id: data.item.section_id, subject_id: data.item.subject_id, school_year_id: data.item.school_year_id } }"
+                  >{{ data.item.section['section'] }}</b-button
+                >
               </template>
               <template #cell(subject)="data">
                 <span v-if="data.item.subject == null">Deleted</span>
