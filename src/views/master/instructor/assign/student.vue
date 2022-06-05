@@ -7,7 +7,7 @@
             <nav class="breadcrumb-one" aria-label="breadcrumb">
               <ol class="breadcrumb">
                 <li class="breadcrumb-item active" aria-current="page">
-                  <span>Instructor - Assign</span>
+                  <span>Admin - Student List</span>
                 </li>
               </ol>
             </nav>
@@ -17,9 +17,9 @@
     </portal>
 
     <div class="row layout-top-spacing">
-      <div class="col-xl-12 col-lg-12 col-md-12 col-12 layout-spacing">
+      <div class="col-xl-12 col-lg-12 col-sm-12 layout-spacing">
         <div class="seperator-header">
-          <h4>Assigned Section & Subject</h4>
+          <h4>View Student List in Section {{ form.sectionName }}</h4>
         </div>
         <div class="panel br-6 p-0">
           <div class="custom-table">
@@ -70,24 +70,8 @@
               :show-empty="true"
               @filtered="on_filtered"
             >
-              <template #cell(section)="data">
-                <span v-if="data.item.section == null">Deleted</span>
-                <b-button v-else size="sm mr-3" pill variant="primary" :to="{ name: 'instructorSectionStudent', params: { id: data.item.section_id } }">{{ data.item.section['section'] }}</b-button>
-              </template>
-              <template #cell(subject)="data">
-                <span v-if="data.item.subject == null">Deleted</span>
-                <span v-else>{{ data.item.subject['subject'] }}</span>
-              </template>
-              <template #cell(year_level)="data">
-                <span v-if="data.item.subject == null">Deleted</span>
-                <span v-else>{{ data.item.subject['year_level'] }}</span>
-              </template>
-              <template #cell(school_year)="data">
-                <span v-if="data.item.school_year == null">Deleted</span>
-                <span v-else>{{ data.item.school_year['start_year'] }} - {{ data.item.school_year['end_year'] }}</span>
-              </template>
               <template #cell(action)>
-                <b-button size="sm" pill variant="dark">Announcement</b-button>
+                <b-button size="sm" pill variant="danger">Drop</b-button>
               </template>
             </b-table>
 
@@ -134,19 +118,34 @@
           </div>
         </div>
       </div>
+      <vue-progress-bar></vue-progress-bar>
     </div>
   </div>
 </template>
-<style scoped>
-.layout-px-spacing {
-  min-height: calc(100vh - 170px) !important;
-}
-</style>
+
 <script>
+import Vue from 'vue';
+import VueMask from 'v-mask';
+Vue.use(VueMask);
+import Errors from '@/main.js';
 export default {
-  metaInfo: { title: 'Assign' },
+  metaInfo: { title: 'Student' },
   data() {
     return {
+      form: {
+        id: '',
+        student_id: '',
+        first_name: '',
+        middle_name: '',
+        last_name: '',
+        age: '',
+        gender: '',
+        contact_number: '',
+        email: '',
+        sectionID: this.$route.params.id,
+        sectionName: '',
+      },
+      errors: new Errors(),
       items: [],
       columns: [],
       table_option: { total_rows: 0, current_page: 1, page_size: 10, search_text: '' },
@@ -164,32 +163,53 @@ export default {
   mounted() {
     this.bind_data();
   },
+  created() {
+    // console.log(id);
+    this.$http
+      .get('/api/assigned/section/' + this.form.sectionID, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      })
+      .then((response) => {
+        this.form.sectionName = response.data.data.section;
+      })
+      .catch(() => {});
+  },
   methods: {
     bind_data() {
       this.columns = [
-        { key: 'section', label: 'Section Name' },
-        { key: 'subject', label: 'Subject Name' },
-        { key: 'year_level', label: 'Year Level' },
-        { key: 'school_year', label: 'School Year' },
+        { key: 'student_id', label: 'Student ID' },
+        { key: 'first_name', label: 'First Name' },
+        { key: 'middle_name', label: 'Middle Name' },
+        { key: 'last_name', label: 'Last Name' },
+        { key: 'age', label: 'Age' },
+        { key: 'gender', label: 'Gender' },
+        { key: 'contact_number', label: 'Contact Number' },
+        { key: 'email', label: 'Email' },
         { key: 'action', label: 'Actions', class: 'actions text-center' },
       ];
       let fetchTodo = async () => {
         this.items = [];
-
-        this.$http
-          .get('/api/assigned/instructor', {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          })
-          .then((res) => {
-            this.items = res.data.data;
-            this.table_option.total_rows = this.items.length;
-            this.get_meta();
-          })
-          .catch((errors) => {
-            console.log(errors);
-          });
+        if (this.$route.params.id == 'undefined') {
+          this.$swal.fire('Not Found!', 'Please choose a section.', 'warning');
+          this.$router.push({ name: 'instructorAssign' });
+        } else {
+          this.$http
+            .get('/api/assigned/student-section/' + this.$route.params.id, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+              },
+            })
+            .then((res) => {
+              this.items = res.data.data;
+              this.table_option.total_rows = this.items.length;
+              this.get_meta();
+            })
+            .catch((errors) => {
+              console.log(errors);
+            });
+        }
       };
 
       fetchTodo();

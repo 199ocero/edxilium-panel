@@ -288,9 +288,7 @@ export default {
       .then((response) => {
         this.form.sectionName = response.data.data.section;
       })
-      .catch((errors) => {
-        console.log(errors);
-      });
+      .catch(() => {});
   },
   methods: {
     bind_data() {

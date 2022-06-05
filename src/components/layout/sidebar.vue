@@ -154,8 +154,8 @@
           </a>
         </router-link>
         <!-- Instructor Assign Subject and Section -->
-        <router-link v-if="is_instructor" tag="li" to="/instructor/assign" class="menu" @click.native="toggleMobileMenu">
-          <a class="dropdown-toggle">
+        <li class="menu" v-if="is_instructor">
+          <a href="#assign" v-b-toggle class="dropdown-toggle" @click.prevent>
             <div class="">
               <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -163,10 +163,33 @@
                 <line x1="12" y1="18" x2="12" y2="12"></line>
                 <line x1="9" y1="15" x2="15" y2="15"></line>
               </svg>
-              <span>{{ $t('Assign') }}</span>
+              <span>Assign</span>
+            </div>
+            <div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="feather feather-chevron-right"
+              >
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
             </div>
           </a>
-        </router-link>
+          <b-collapse id="assign" accordion="menu">
+            <ul class="collapse submenu list-unstyled show">
+              <router-link tag="li" to="/instructor/assign" @click.native="toggleMobileMenu"><a>Section</a></router-link>
+              <router-link tag="li" :to="'/instructor/section/' + sectionID" @click.native="toggleMobileMenu"><a>Student</a></router-link>
+              <router-link tag="li" to="/instructor/announcement" @click.native="toggleMobileMenu"><a>Announcement</a></router-link>
+            </ul>
+          </b-collapse>
+        </li>
         <!-- Instructor Profile -->
         <router-link v-if="is_instructor" tag="li" to="/instructor/profile" class="menu" @click.native="toggleMobileMenu">
           <a class="dropdown-toggle">

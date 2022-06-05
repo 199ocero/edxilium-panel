@@ -117,6 +117,17 @@ const routes = [
         }
     },
 
+    // Instructor - Section Student Routes
+    {
+        path: '/instructor/section/:id',
+        name: 'instructorSectionStudent',
+        component: () => import(/* webpackChunkName: "components-tabs" */ '../views/master/instructor/assign/student.vue'),
+        meta: {
+            requiresAuth:true,
+            is_instructor: true
+        }
+    },
+
 
      // Public Routes with Authorization
     {
