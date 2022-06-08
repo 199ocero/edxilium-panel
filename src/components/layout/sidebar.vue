@@ -185,8 +185,8 @@
           <b-collapse id="assign" accordion="menu">
             <ul class="collapse submenu list-unstyled show">
               <router-link tag="li" to="/instructor/assign" @click.native="toggleMobileMenu"><a>Section</a></router-link>
-              <router-link tag="li" :to="'/instructor/info/' + sectionID + '/' + subjectID + '/' + school_yearID" @click.native="toggleMobileMenu"><a>Student</a></router-link>
-              <router-link tag="li" to="/instructor/announcement" @click.native="toggleMobileMenu"><a>Announcement</a></router-link>
+              <router-link tag="li" :to="'/instructor/info/' + sectionID + '/' + subjectID" @click.native="toggleMobileMenu"><a>Student</a></router-link>
+              <router-link tag="li" :to="'/instructor/announcement/' + sectionID + '/' + subjectID" @click.native="toggleMobileMenu"><a>Announcement</a></router-link>
             </ul>
           </b-collapse>
         </li>

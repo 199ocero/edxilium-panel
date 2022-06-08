@@ -7,7 +7,7 @@
             <nav class="breadcrumb-one" aria-label="breadcrumb">
               <ol class="breadcrumb">
                 <li class="breadcrumb-item active" aria-current="page">
-                  <span>Instructor - Student List</span>
+                  <span>Instructor - Announcement</span>
                 </li>
               </ol>
             </nav>
@@ -19,12 +19,12 @@
     <div class="row layout-top-spacing">
       <div class="col-xl-12 col-lg-12 col-sm-12 layout-spacing">
         <div class="seperator-header">
-          <h4>View Student List in Section {{ form.sectionName }} and Subject {{ form.subjectName }}</h4>
+          <h4>View Announcement List in Section {{ form.sectionName }} and Subject {{ form.subjectName }}</h4>
         </div>
         <div class="panel br-6 p-0">
           <div class="custom-table">
             <div class="d-flex flex-wrap justify-content-center justify-content-sm-start px-3 pt-3 pb-0">
-              <b-button variant="primary" class="m-1" v-b-modal.irregModal @click="getData"> Add Irregular </b-button>
+              <b-button variant="primary" class="m-1" v-b-modal.schoolYearModal> Add Announcement </b-button>
             </div>
             <div class="table-header">
               <div class="d-flex align-items-center">
@@ -73,16 +73,9 @@
               :show-empty="true"
               @filtered="on_filtered"
             >
-              <template #cell(status)="data">
-                <b-badge variant="danger" v-if="data.item.status == 'Regular' && data.item.drop_status == 1"> Drop </b-badge>
-                <b-badge variant="danger" v-else-if="data.item.status == 'Irregular' && data.item.drop_status == 1"> Drop </b-badge>
-                <b-badge variant="primary" v-else-if="data.item.status == 'Regular' && data.item.drop_status == 0"> Regular </b-badge>
-                <b-badge variant="secondary" v-else> Irregular </b-badge>
-              </template>
               <template #cell(action)="data">
-                <b-button size="sm mr-3" pill variant="secondary" v-if="data.item.status == 'Irregular'" @click="deleteIrreg(data.item.id)">Remove</b-button>
-                <b-button size="sm" pill variant="danger" v-if="data.item.drop_status == 0" @click="dropStudent(data.item.id)">Drop</b-button>
-                <b-button size="sm" pill variant="success" v-else @click="addStudent(data.item.id)">Add</b-button>
+                <b-button size="sm mr-3" pill variant="dark" v-b-modal.schoolYearEditModal @click="editSchoolYear(data.item.id)">Edit</b-button>
+                <b-button size="sm" pill variant="danger" @click="deleteSchoolYear(data.item.id)">Delete</b-button>
               </template>
             </b-table>
 
@@ -131,93 +124,30 @@
       </div>
       <vue-progress-bar></vue-progress-bar>
     </div>
-    <b-modal id="irregModal" title="Add Irregular Student" centered hide-footer @hidden="irregResetModal">
-      <b-form action="#" @submit.prevent="addIrreg" @keydown="errors.clear($event.target.name)">
-        <b-form-group label="Irregular Student" class="select2">
-          <multiselect
-            v-model="form.student_id"
-            :options="student"
-            track-by="id"
-            :custom-label="fullName"
-            :searchable="true"
-            placeholder="Select Irregular Student"
-            selected-label=""
-            select-label=""
-            deselect-label=""
-            @select="onSelect1"
-          >
-          </multiselect>
-          <span class="text-danger" v-text="errors.get('student_id')"></span>
-        </b-form-group>
-        <hr />
-        <div class="d-flex flex-wrap justify-content-center justify-content-sm-end">
-          <b-button type="submit" variant="primary" class="mt-3 m-1">Add</b-button>
-          <b-button variant="danger" class="mt-3 m-1" @click="$bvModal.hide('irregModal')">Cancel</b-button>
-        </div>
-      </b-form>
-    </b-modal>
   </div>
 </template>
-<style scoped>
-.layout-px-spacing {
-  min-height: calc(100vh - 170px) !important;
-}
-.select2 .multiselect__option--highlight {
-  background: #fff;
-  color: #4361ee;
-}
-.select2 .multiselect__option--selected {
-  background-color: rgba(27, 85, 226, 0.23921568627450981);
-  color: #4361ee;
-  font-weight: normal;
-}
-.select2 .multiselect__option--disabled {
-  background: inherit !important;
-}
-.select2 .multiselect__tag {
-  color: #000;
-  background: #e4e4e4;
-}
-.select2 .multiselect__tag-icon:after {
-  color: #000 !important;
-}
-.select2 .multiselect__tag-icon:focus,
-.select2 .multiselect__tag-icon:hover {
-  background: inherit;
-}
-</style>
+
 <script>
-import Multiselect from 'vue-multiselect';
-import 'vue-multiselect/dist/vue-multiselect.min.css';
 import Vue from 'vue';
 import VueMask from 'v-mask';
 Vue.use(VueMask);
 import Errors from '@/main.js';
 export default {
-  metaInfo: { title: 'Student' },
-  components: {
-    Multiselect,
-  },
+  metaInfo: { title: 'Announcement' },
   data() {
     return {
       form: {
         id: '',
-        student_id: '',
-        section_id: '',
-        subject_id: '',
-        first_name: '',
-        middle_name: '',
-        last_name: '',
-        age: '',
-        gender: '',
-        contact_number: '',
-        email: '',
-        sectionID: this.$route.params.section_id,
-        subjectID: this.$route.params.subject_id,
+        deadline: '',
+        act_title: '',
+        instruction: '',
+        act_link: '',
+        attachment: '',
         sectionName: '',
         subjectName: '',
+        sectionID: this.$route.params.section_id,
+        subjectID: this.$route.params.subject_id,
       },
-      student: [],
       errors: new Errors(),
       items: [],
       columns: [],
@@ -235,7 +165,6 @@ export default {
   },
   mounted() {
     this.bind_data();
-    this.getData();
   },
   created() {
     // console.log(id);
@@ -252,33 +181,24 @@ export default {
       .catch(() => {});
   },
   methods: {
-    fullName({ first_name, last_name }) {
-      return `${first_name} ${last_name}`;
-    },
-    onSelect1() {
-      this.errors.clear('student_id');
-    },
     bind_data() {
       this.columns = [
-        { key: 'student_id', label: 'Student ID' },
-        { key: 'first_name', label: 'First Name' },
-        { key: 'middle_name', label: 'Middle Name' },
-        { key: 'last_name', label: 'Last Name' },
-        { key: 'age', label: 'Age' },
-        { key: 'gender', label: 'Gender' },
-        { key: 'contact_number', label: 'Contact Number' },
-        { key: 'email', label: 'Email' },
-        { key: 'status', label: 'Status' },
+        { key: 'deadline', label: 'Date' },
+        { key: 'deadline', label: 'Time' },
+        { key: 'act_title', label: 'Activity Title' },
+        { key: 'instruction', label: 'Instruction' },
+        { key: 'act_link', label: 'Activity Link' },
+        { key: 'attachment', label: 'Attachment' },
         { key: 'action', label: 'Actions', class: 'actions text-center' },
       ];
       let fetchTodo = async () => {
         this.items = [];
         if (this.$route.params.section_id == 'undefined') {
-          this.$swal.fire('Not Found!', 'Please choose a section.', 'warning');
+          this.$swal.fire('Not Found!', 'Please click the announcement button in section page.', 'warning');
           this.$router.push({ name: 'instructorAssign' });
         } else {
           this.$http
-            .get(`/api/assigned/student-section/${this.form.sectionID}/${this.form.subjectID}`, {
+            .get(`/api/announcement/${this.form.sectionID}/${this.form.subjectID}`, {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem('token')}`,
               },
@@ -295,138 +215,6 @@ export default {
       };
 
       fetchTodo();
-    },
-    getData() {
-      this.$http
-        .get(`/api/irregular/${this.form.sectionID}/${this.form.subjectID}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-        .then((response) => {
-          this.student = response.data.data;
-        })
-        .catch((errors) => {
-          this.errors.record(errors.response.data.errors);
-        });
-    },
-    addIrreg() {
-      this.form.student_id = this.form.student_id.id;
-      this.form.section_id = this.$route.params.section_id;
-      this.form.subject_id = this.$route.params.subject_id;
-      this.$Progress.start();
-      this.$http
-        .post('/api/irregular', this.form, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-        .then(() => {
-          this.$toaster.success('Irregular Added Successfuly!');
-          this.$nextTick(() => {
-            this.$bvModal.hide('irregModal');
-          });
-          this.bind_data();
-          this.$Progress.finish();
-        })
-        .catch((errors) => {
-          console.log(errors);
-          // this.errors.record(errors.response.data.errors);
-          // this.$Progress.fail();
-          // this.form.instructor_id = [];
-          // this.form.section_id = [];
-          // this.form.subject_id = [];
-          // this.form.school_year_id = [];
-          // this.errors.record(errors.response.data.errors);
-        });
-    },
-    deleteIrreg(id) {
-      // console.log(id);
-      // this.$swal('Hello Vue world!!!');
-      this.$swal
-        .fire({
-          title: 'Are you sure?',
-          text: "You won't be able to revert this!",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Yes, delete it!',
-        })
-        .then((result) => {
-          if (result.isConfirmed) {
-            //Send delete request
-            this.$Progress.start();
-            this.$http
-              .delete(`/api/irregular/${id}/${this.form.sectionID}/${this.form.subjectID}`, {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-              })
-              .then(() => {
-                this.$swal.fire('Deleted!', 'Irregular student has been deleted.', 'success');
-                this.bind_data();
-                this.$Progress.finish();
-              })
-              .catch(() => {
-                this.$swal.fire('Failed!', 'There was something wrong.', 'warning');
-                this.$Progress.fail();
-              });
-          }
-        });
-    },
-    addStudent(id) {
-      let self = this;
-      var axios = require('axios');
-      var data = this.form;
-      var config = {
-        method: 'put',
-        url: '/api/student/add/' + id,
-        headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token'),
-        },
-        data: data,
-      };
-      self.$Progress.start();
-      axios(config)
-        .then(function () {
-          self.$toaster.success('Student Added Successfuly!');
-          self.bind_data();
-          self.$Progress.finish();
-        })
-        .catch(function (errors) {
-          self.errors.record(errors.response.data.errors);
-          self.$Progress.fail();
-        });
-    },
-    dropStudent(id) {
-      let self = this;
-      var axios = require('axios');
-      var data = this.form;
-      var config = {
-        method: 'put',
-        url: '/api/student/drop/' + id,
-        headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('token'),
-        },
-        data: data,
-      };
-      self.$Progress.start();
-      axios(config)
-        .then(function () {
-          self.$toaster.success('Student Drop Successfuly!');
-          self.bind_data();
-          self.$Progress.finish();
-        })
-        .catch(function (errors) {
-          self.errors.record(errors.response.data.errors);
-          self.$Progress.fail();
-        });
-    },
-    irregResetModal() {
-      this.form.student_id = [];
-      // this will remove the error
-      this.errors.clear('student_id');
     },
     on_filtered(filtered_items) {
       this.refresh_table(filtered_items.length);

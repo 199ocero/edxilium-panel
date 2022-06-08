@@ -93,8 +93,8 @@
                 <span v-if="data.item.school_year == null">Deleted</span>
                 <span v-else>{{ data.item.school_year['start_year'] }} - {{ data.item.school_year['end_year'] }}</span>
               </template>
-              <template #cell(action)>
-                <b-button size="sm" pill variant="dark">Announcement</b-button>
+              <template #cell(action)="data">
+                <b-button size="sm" pill variant="dark" :to="{ name: 'instructorAnnouncement', params: { section_id: data.item.section_id, subject_id: data.item.subject_id } }">Announcement</b-button>
               </template>
             </b-table>
 

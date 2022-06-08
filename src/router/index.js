@@ -119,9 +119,20 @@ const routes = [
 
     // Instructor - Section Student Routes
     {
-        path: '/instructor/info/:section_id/:subject_id/:school_year_id',
+        path: '/instructor/info/:section_id/:subject_id',
         name: 'instructorSectionStudent',
         component: () => import(/* webpackChunkName: "components-tabs" */ '../views/master/instructor/assign/student.vue'),
+        meta: {
+            requiresAuth:true,
+            is_instructor: true
+        }
+    },
+
+    // Instructor - Announcement Routes
+    {
+        path: '/instructor/announcement/:section_id/:subject_id',
+        name: 'instructorAnnouncement',
+        component: () => import(/* webpackChunkName: "components-tabs" */ '../views/master/instructor/assign/announcement.vue'),
         meta: {
             requiresAuth:true,
             is_instructor: true

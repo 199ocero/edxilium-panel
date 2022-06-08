@@ -72,8 +72,7 @@ Vue.use(VueProgressBar, optionss)
 import axios from 'axios'
 
 Vue.prototype.$http=axios
-axios.defaults.baseURL = 'https://edxilium.herokuapp.com/' //change this base URL when deployed to server
-
+axios.defaults.baseURL = process.env.VUE_APP_API_URL
 
 import VueMask from 'v-mask';
 Vue.use(VueMask);
