@@ -24,7 +24,7 @@
         <div class="panel br-6 p-0">
           <div class="custom-table">
             <div class="d-flex flex-wrap justify-content-center justify-content-sm-start px-3 pt-3 pb-0">
-              <b-button variant="primary" class="m-1" v-b-modal.schoolYearModal> Add Announcement </b-button>
+              <b-button variant="primary" class="m-1" v-b-modal.announcementModal> Add Announcement </b-button>
             </div>
             <div class="table-header">
               <div class="d-flex align-items-center">
@@ -124,16 +124,58 @@
       </div>
       <vue-progress-bar></vue-progress-bar>
     </div>
+    <!--Add Modal for Announcement -->
+    <b-modal id="announcementModal" title="Add Announcement" centered hide-footer no-close-on-backdrop>
+      <b-form action="#" @submit.prevent="addAnnouncement" @keydown="errors.clear($event.target.name)">
+        <b-form-group label="Date and Time">
+          <flat-pickr
+            v-model="form.deadline"
+            :config="{ static: true, wrap: true, enableTime: true, dateFormat: 'Y-m-d H:i:S' }"
+            placeholder="Select Date and Time"
+            class="form-control flatpickr active"
+          ></flat-pickr>
+          <span class="text-danger" v-text="errors.get('deadline')"></span>
+        </b-form-group>
+        <b-form-group label="Activity Title">
+          <b-input v-model="form.act_title" name="act_title" type="text" placeholder="Activity Title"></b-input>
+          <span class="text-danger" v-text="errors.get('act_title')"></span>
+        </b-form-group>
+        <b-form-group label="Instruction">
+          <b-textarea rows="5" v-model="form.instruction" name="instruction" placeholder="Instruction"></b-textarea>
+          <span class="text-danger" v-text="errors.get('instruction')"></span>
+        </b-form-group>
+        <b-form-group label="Activity Link">
+          <b-input v-model="form.act_link" name="act_link" type="text" placeholder="Activity Link"></b-input>
+          <span class="text-danger" v-text="errors.get('act_link')"></span>
+        </b-form-group>
+        <b-form-group label="Attachment (Optional)">
+          <b-input v-model="form.attachment" name="attachment" type="text" placeholder="Attachment (Optional)"></b-input>
+          <span class="text-danger" v-text="errors.get('attachment')"></span>
+        </b-form-group>
+        <hr />
+        <div class="d-flex flex-wrap justify-content-center justify-content-sm-end">
+          <b-button type="submit" variant="primary" class="mt-3 m-1">Create</b-button>
+          <b-button variant="danger" class="mt-3 m-1" @click="$bvModal.hide('announcementModal')">Cancel</b-button>
+        </div>
+      </b-form>
+    </b-modal>
   </div>
 </template>
 
 <script>
+//flatpickr
+import flatPickr from 'vue-flatpickr-component';
+import 'flatpickr/dist/flatpickr.css';
+import '@/assets/sass/forms/custom-flatpickr.css';
 import Vue from 'vue';
 import VueMask from 'v-mask';
 Vue.use(VueMask);
 import Errors from '@/main.js';
 export default {
   metaInfo: { title: 'Announcement' },
+  components: {
+    flatPickr,
+  },
   data() {
     return {
       form: {
@@ -215,6 +257,27 @@ export default {
       };
 
       fetchTodo();
+    },
+    addAnnouncement() {
+      this.$Progress.start();
+      this.$http
+        .post(`/api/announcement/${this.form.sectionID}/${this.form.subjectID}`, this.form, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+        .then(() => {
+          this.$toaster.success('Announcement Created Successfuly!');
+          this.$nextTick(() => {
+            this.$bvModal.hide('announcementModal');
+          });
+          this.bind_data();
+          this.$Progress.finish();
+        })
+        .catch((errors) => {
+          this.errors.record(errors.response.data.errors);
+          this.$Progress.fail();
+        });
     },
     on_filtered(filtered_items) {
       this.refresh_table(filtered_items.length);
