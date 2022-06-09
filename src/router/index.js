@@ -140,6 +140,18 @@ const routes = [
     },
 
 
+    // Student - Profile Routes
+    {
+        path: '/student/profile',
+        name: 'studentProfile',
+        component: () => import(/* webpackChunkName: "components-tabs" */ '../views/master/student/profile/profile.vue'),
+        meta: {
+            requiresAuth: true,
+            is_student: true
+        }
+    },
+
+
      // Public Routes with Authorization
     {
         // Temporary Routes for Admin Creation

@@ -294,7 +294,7 @@ export default {
           });
           this.bind_data();
           this.$Progress.finish();
-          this.$swal.fire('Email Sent', 'Email verification and credentials are sent!', 'success');
+          this.$swal.fire('Email Sent', 'Email verification sent!', 'success');
         })
         .catch((errors) => {
           this.errors.record(errors.response.data.errors);

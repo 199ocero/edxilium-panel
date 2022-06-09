@@ -113,6 +113,14 @@ router.beforeEach((to, from, next) => {
               name: 'error404'
             })
           }
+        }else if (to.matched.some(record => record.meta.is_student)) {
+          if (user == 'student') {
+            next()
+          } else {
+            next({
+              name: 'error404'
+            })
+          }
         }
         
         else {

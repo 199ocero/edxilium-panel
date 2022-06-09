@@ -141,13 +141,13 @@
           <flat-pickr
             @on-change="clearDateError"
             v-model="form.deadline"
-            :config="{ static: true, wrap: true, enableTime: true, dateFormat: 'Y-m-d H:i:S' }"
+            :config="{ minDate: 'today', static: true, wrap: true, enableTime: true, dateFormat: 'Y-m-d H:i:S' }"
             placeholder="Select Date and Time"
             class="form-control flatpickr active"
           ></flat-pickr>
           <span class="text-danger" v-text="errors.get('deadline')"></span>
         </b-form-group>
-        <b-form-group label="Activity Title">
+        <b-form-group label="Activity Title (URL)">
           <b-input v-model="form.act_title" name="act_title" type="text" placeholder="Activity Title"></b-input>
           <span class="text-danger" v-text="errors.get('act_title')"></span>
         </b-form-group>
@@ -159,7 +159,7 @@
           <b-input v-model="form.act_link" name="act_link" type="text" placeholder="Activity Link"></b-input>
           <span class="text-danger" v-text="errors.get('act_link')"></span>
         </b-form-group>
-        <b-form-group label="Attachment (Optional)">
+        <b-form-group label="Attachment (URL) (Optional)">
           <b-input v-model="form.attachment" name="attachment" type="text" placeholder="Attachment (Optional)"></b-input>
           <span class="text-danger" v-text="errors.get('attachment')"></span>
         </b-form-group>
@@ -190,11 +190,11 @@
           <b-textarea rows="5" v-model="form.instruction" name="instruction" placeholder="Instruction"></b-textarea>
           <span class="text-danger" v-text="errors.get('instruction')"></span>
         </b-form-group>
-        <b-form-group label="Activity Link">
+        <b-form-group label="Activity Link (URL)">
           <b-input v-model="form.act_link" name="act_link" type="text" placeholder="Activity Link"></b-input>
           <span class="text-danger" v-text="errors.get('act_link')"></span>
         </b-form-group>
-        <b-form-group label="Attachment (Optional)">
+        <b-form-group label="Attachment (URL) (Optional)">
           <b-input v-model="form.attachment" name="attachment" type="text" placeholder="Attachment (Optional)"></b-input>
           <span class="text-danger" v-text="errors.get('attachment')"></span>
         </b-form-group>

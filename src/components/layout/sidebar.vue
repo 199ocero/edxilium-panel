@@ -202,6 +202,18 @@
             </div>
           </a>
         </router-link>
+        <!-- Student Profile -->
+        <router-link v-if="is_student" tag="li" to="/student/profile" class="menu" @click.native="toggleMobileMenu">
+          <a class="dropdown-toggle">
+            <div class="">
+              <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span>{{ $t('Profile') }}</span>
+            </div>
+          </a>
+        </router-link>
       </perfect-scrollbar>
     </nav>
   </div>
@@ -214,6 +226,7 @@ export default {
       menu_collapse: 'dashboard',
       is_admin: '',
       is_instructor: '',
+      is_student: '',
     };
   },
   computed: {
@@ -256,6 +269,7 @@ export default {
       .then((response) => {
         this.is_admin = response.data.role == 'admin' ? true : false;
         this.is_instructor = response.data.role == 'instructor' ? true : false;
+        this.is_student = response.data.role == 'student' ? true : false;
         localStorage.setItem('role', response.data.role);
       })
       .catch((errors) => {
