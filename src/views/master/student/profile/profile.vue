@@ -47,6 +47,12 @@
                 <small class="form-text text-muted"><span style="color: #009688">Note:</span> Contact number should start with number 9.</small>
               </b-form-group>
             </b-form-row>
+            <b-form-row class="mb-4">
+              <b-form-group label="Facebook ID" class="col-md-12">
+                <b-input v-model="form.facebook_id1" v-mask="'################'" placeholder="________________" readonly></b-input>
+                <small class="form-text text-muted"><span style="color: #009688">Note:</span> Facebook ID is a 16 digit numbers.</small>
+              </b-form-group>
+            </b-form-row>
             <hr />
             <div class="d-flex flex-wrap justify-content-center justify-content-sm-end">
               <b-button type="submit" variant="primary" class="mt-3 m-1" v-b-modal.studentEditModal @click="editStudent">Edit Profile</b-button>
@@ -93,6 +99,13 @@
             <span class="text-danger" v-text="errors.get('contact_number')"></span>
           </b-form-group>
         </b-form-row>
+        <b-form-row class="mb-4">
+          <b-form-group label="Facebook ID" class="col-md-12">
+            <b-input v-model="form.facebook_id" v-mask="'################'" placeholder="________________"></b-input>
+            <small class="form-text text-muted"><span style="color: #009688">Note:</span> Facebook ID is a 16 digit numbers.</small>
+          </b-form-group>
+        </b-form-row>
+
         <hr />
         <div class="d-flex flex-wrap justify-content-center justify-content-sm-end">
           <b-button type="submit" variant="primary" class="mt-3 m-1">Update</b-button>
@@ -122,6 +135,7 @@ export default {
         gender: '',
         contact_number: '',
         email: '',
+        facebook_id: '',
         first_name1: '',
         middle_name1: '',
         last_name1: '',
@@ -129,6 +143,7 @@ export default {
         gender1: '',
         contact_number1: '',
         email1: '',
+        facebook_id1: '',
       },
       errors: new Errors(),
     };
@@ -151,6 +166,7 @@ export default {
           this.form.age1 = response.data.data.age;
           this.form.gender1 = response.data.data.gender;
           this.form.contact_number1 = response.data.data.contact_number;
+          this.form.facebook_id1 = response.data.data.facebook_id;
         })
         .catch((errors) => {
           this.errors.record(errors.response.data.errors);
@@ -171,6 +187,7 @@ export default {
           this.form.age = response.data.data.age;
           this.form.gender = response.data.data.gender;
           this.form.contact_number = response.data.data.contact_number;
+          this.form.facebook_id = response.data.data.facebook_id;
         })
         .catch((errors) => {
           this.errors.record(errors.response.data.errors);
@@ -210,6 +227,7 @@ export default {
       this.form.age = 'age';
       this.form.gender = 'gender';
       this.form.contact_number = 'contact_number';
+      this.form.facebook_id = 'facebook_id';
 
       this.form.first_name = '';
       this.form.middle_name = '';
@@ -217,6 +235,7 @@ export default {
       this.form.age = '';
       this.form.gender = '';
       this.form.contact_number = '';
+      this.form.facebook_id = '';
 
       this.errors.clear('first_name');
       this.errors.clear('middle_name');
@@ -224,6 +243,7 @@ export default {
       this.errors.clear('age');
       this.errors.clear('gender');
       this.errors.clear('contact_number');
+      this.errors.clear('facebook_id');
     },
   },
 };
