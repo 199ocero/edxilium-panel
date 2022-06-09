@@ -73,9 +73,15 @@
               :show-empty="true"
               @filtered="on_filtered"
             >
+              <template #cell(date)="data">
+                <span>{{ moment.utc(data.item.deadline).format('MMMM D, YYYY') }}</span>
+              </template>
+              <template #cell(time)="data">
+                <span>{{ moment.utc(data.item.deadline).format('h:mm A') }}</span>
+              </template>
               <template #cell(action)="data">
-                <b-button size="sm mr-3" pill variant="dark" v-b-modal.schoolYearEditModal @click="editSchoolYear(data.item.id)">Edit</b-button>
-                <b-button size="sm" pill variant="danger" @click="deleteSchoolYear(data.item.id)">Delete</b-button>
+                <b-button size="sm mr-3" pill variant="dark" v-b-modal.announcementEditModal @click="editAnnouncement(data.item.id)">Edit</b-button>
+                <b-button size="sm" pill variant="danger" @click="deleteAnnouncement(data.item.id)">Delete</b-button>
               </template>
             </b-table>
 
@@ -125,10 +131,15 @@
       <vue-progress-bar></vue-progress-bar>
     </div>
     <!--Add Modal for Announcement -->
-    <b-modal id="announcementModal" title="Add Announcement" centered hide-footer no-close-on-backdrop>
+    <b-modal id="announcementModal" title="Add Announcement" centered hide-footer no-close-on-backdrop @hidden="announcementResetModal">
+      <span class="form-text text-muted mb-2"
+        ><span style="color: #009688">Note:</span> Unless you click the cancel or "X" button, this window will not close. Otherwise, clicking one of those two will dismiss the window and reset
+        everything. Please take caution.</span
+      >
       <b-form action="#" @submit.prevent="addAnnouncement" @keydown="errors.clear($event.target.name)">
         <b-form-group label="Date and Time">
           <flat-pickr
+            @on-change="clearDateError"
             v-model="form.deadline"
             :config="{ static: true, wrap: true, enableTime: true, dateFormat: 'Y-m-d H:i:S' }"
             placeholder="Select Date and Time"
@@ -156,6 +167,41 @@
         <div class="d-flex flex-wrap justify-content-center justify-content-sm-end">
           <b-button type="submit" variant="primary" class="mt-3 m-1">Create</b-button>
           <b-button variant="danger" class="mt-3 m-1" @click="$bvModal.hide('announcementModal')">Cancel</b-button>
+        </div>
+      </b-form>
+    </b-modal>
+    <!--Edit Modal for Announcement -->
+    <b-modal id="announcementEditModal" title="Edit Announcement" centered hide-footer @hidden="announcementResetModal">
+      <b-form action="#" @submit.prevent="updateAnnouncement" @keydown="errors.clear($event.target.name)">
+        <b-form-group label="Date and Time">
+          <flat-pickr
+            v-model="form.deadline"
+            :config="{ static: true, wrap: true, enableTime: true, dateFormat: 'Y-m-d H:i:S' }"
+            placeholder="Select Date and Time"
+            class="form-control flatpickr active"
+          ></flat-pickr>
+          <span class="text-danger" v-text="errors.get('deadline')"></span>
+        </b-form-group>
+        <b-form-group label="Activity Title">
+          <b-input v-model="form.act_title" name="act_title" type="text" placeholder="Activity Title"></b-input>
+          <span class="text-danger" v-text="errors.get('act_title')"></span>
+        </b-form-group>
+        <b-form-group label="Instruction">
+          <b-textarea rows="5" v-model="form.instruction" name="instruction" placeholder="Instruction"></b-textarea>
+          <span class="text-danger" v-text="errors.get('instruction')"></span>
+        </b-form-group>
+        <b-form-group label="Activity Link">
+          <b-input v-model="form.act_link" name="act_link" type="text" placeholder="Activity Link"></b-input>
+          <span class="text-danger" v-text="errors.get('act_link')"></span>
+        </b-form-group>
+        <b-form-group label="Attachment (Optional)">
+          <b-input v-model="form.attachment" name="attachment" type="text" placeholder="Attachment (Optional)"></b-input>
+          <span class="text-danger" v-text="errors.get('attachment')"></span>
+        </b-form-group>
+        <hr />
+        <div class="d-flex flex-wrap justify-content-center justify-content-sm-end">
+          <b-button type="submit" variant="primary" class="mt-3 m-1">Update</b-button>
+          <b-button variant="danger" class="mt-3 m-1" @click="$bvModal.hide('announcementEditModal')">Cancel</b-button>
         </div>
       </b-form>
     </b-modal>
@@ -225,12 +271,9 @@ export default {
   methods: {
     bind_data() {
       this.columns = [
-        { key: 'deadline', label: 'Date' },
-        { key: 'deadline', label: 'Time' },
+        { key: 'date', label: 'Due Date' },
+        { key: 'time', label: 'Closing Time' },
         { key: 'act_title', label: 'Activity Title' },
-        { key: 'instruction', label: 'Instruction' },
-        { key: 'act_link', label: 'Activity Link' },
-        { key: 'attachment', label: 'Attachment' },
         { key: 'action', label: 'Actions', class: 'actions text-center' },
       ];
       let fetchTodo = async () => {
@@ -278,6 +321,110 @@ export default {
           this.errors.record(errors.response.data.errors);
           this.$Progress.fail();
         });
+    },
+    editAnnouncement(id) {
+      this.$http
+        .get('/api/announcement/' + id, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+        .then((response) => {
+          this.form.id = response.data.data.id;
+          this.form.deadline = response.data.data.deadline;
+          this.form.act_title = response.data.data.act_title;
+          this.form.instruction = response.data.data.instruction;
+          this.form.act_link = response.data.data.act_link;
+          this.form.attachment = response.data.data.attachment;
+        })
+        .catch((errors) => {
+          this.errors.record(errors.response.data.errors);
+        });
+    },
+    deleteAnnouncement(id) {
+      this.$swal
+        .fire({
+          title: 'Are you sure?',
+          text: "You won't be able to revert this!",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Yes, delete it!',
+        })
+        .then((result) => {
+          if (result.isConfirmed) {
+            //Send delete request
+            this.$Progress.start();
+            this.$http
+              .delete('/api/announcement/' + id, {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+              })
+              .then(() => {
+                this.$swal.fire('Deleted!', 'Announcement has been deleted.', 'success');
+                this.bind_data();
+                this.$Progress.finish();
+              })
+              .catch(() => {
+                this.$swal.fire('Failed!', 'There was something wrong.', 'warning');
+                this.$Progress.fail();
+              });
+          }
+        });
+    },
+    updateAnnouncement() {
+      var id = this.form.id;
+      let self = this;
+      var axios = require('axios');
+      var data = this.form;
+      var config = {
+        method: 'put',
+        url: '/api/announcement/' + id,
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token'),
+        },
+        data: data,
+      };
+      self.$Progress.start();
+      axios(config)
+        .then(function () {
+          self.$toaster.success('Announcement Update Successfuly!');
+          self.$nextTick(() => {
+            self.$bvModal.hide('announcementEditModal');
+          });
+          self.bind_data();
+          self.$Progress.finish();
+        })
+        .catch(function (errors) {
+          self.errors.record(errors.response.data.errors);
+          self.$Progress.fail();
+        });
+    },
+    clearDateError() {
+      this.errors.clear('deadline');
+    },
+    announcementResetModal() {
+      this.form.deadline = 'deadline';
+      this.form.deadline = '';
+      this.errors.clear('deadline');
+
+      this.form.act_title = 'act_title';
+      this.form.act_title = '';
+      this.errors.clear('act_title');
+
+      this.form.instruction = 'instruction';
+      this.form.instruction = '';
+      this.errors.clear('instruction');
+
+      this.form.act_link = 'act_link';
+      this.form.act_link = '';
+      this.errors.clear('act_link');
+
+      this.form.attachment = 'attachment';
+      this.form.attachment = '';
+      this.errors.clear('attachment');
     },
     on_filtered(filtered_items) {
       this.refresh_table(filtered_items.length);

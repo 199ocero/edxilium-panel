@@ -46,7 +46,11 @@ Vue.prototype.$appSetting = appSetting;
 appSetting.init();
 
 
-/*Added Configurations for Laravel*/ 
+/*Added Configurations for Laravel*/
+
+import moment from 'moment'
+
+Vue.prototype.moment = moment
 
 import Toaster from 'v-toaster'
  
