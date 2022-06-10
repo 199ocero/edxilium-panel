@@ -74,14 +74,13 @@
               @filtered="on_filtered"
             >
               <template #cell(status)="data">
-                <b-badge variant="danger" v-if="data.item.status == 'Regular' && data.item.drop_status == 1"> Drop </b-badge>
-                <b-badge variant="danger" v-else-if="data.item.status == 'Irregular' && data.item.drop_status == 1"> Drop </b-badge>
-                <b-badge variant="primary" v-else-if="data.item.status == 'Regular' && data.item.drop_status == 0"> Regular </b-badge>
-                <b-badge variant="secondary" v-else> Irregular </b-badge>
+                <b-badge variant="primary" v-if="data.item.status == 'Regular'">Regular</b-badge>
+                <b-badge variant="secondary" v-else-if="data.item.status == 'Irregular'"> Irregular </b-badge>
+                <b-badge variant="danger" v-else> Drop </b-badge>
               </template>
               <template #cell(action)="data">
                 <b-button size="sm mr-3" pill variant="secondary" v-if="data.item.status == 'Irregular'" @click="deleteIrreg(data.item.id)">Remove</b-button>
-                <b-button size="sm" pill variant="danger" v-if="data.item.drop_status == 0" @click="dropStudent(data.item.id)">Drop</b-button>
+                <b-button size="sm" pill variant="danger" v-if="data.item.status == 'Regular' || data.item.status == 'Irregular'" @click="dropStudent(data.item.id)">Drop</b-button>
                 <b-button size="sm" pill variant="success" v-else @click="addStudent(data.item.id)">Add</b-button>
               </template>
             </b-table>
@@ -381,7 +380,7 @@ export default {
       var data = this.form;
       var config = {
         method: 'put',
-        url: '/api/student/add/' + id,
+        url: `/api/student/add/${id}/${this.form.sectionID}/${this.form.subjectID}`,
         headers: {
           Authorization: 'Bearer ' + localStorage.getItem('token'),
         },
@@ -405,7 +404,7 @@ export default {
       var data = this.form;
       var config = {
         method: 'put',
-        url: '/api/student/drop/' + id,
+        url: `/api/student/drop/${id}/${this.form.sectionID}/${this.form.subjectID}`,
         headers: {
           Authorization: 'Bearer ' + localStorage.getItem('token'),
         },
