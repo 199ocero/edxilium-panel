@@ -316,14 +316,14 @@ export default {
           });
           this.bind_data();
           this.$Progress.finish();
-          // this.$http
-          //   .get(process.env.VUE_APP_CHATBOT_URL + 'brodcast-announcement/' + localStorage.getItem('token') + '/' + this.form.sectionID + '/' + this.form.subjectID)
-          //   .then(() => {
-          //     this.$swal.fire('Success!', 'Announcement broadcasted successfully!', 'success');
-          //   })
-          //   .catch((errors) => {
-          //     this.errors.record(errors.response.data.errors);
-          //   });
+          this.$http
+            .get(process.env.VUE_APP_CHATBOT_URL + 'brodcast-announcement/' + localStorage.getItem('token') + '/' + this.form.sectionID + '/' + this.form.subjectID)
+            .then(() => {
+              this.$swal.fire('Success!', 'Announcement broadcasted successfully!', 'success');
+            })
+            .catch((errors) => {
+              this.errors.record(errors.response.data.errors);
+            });
         })
         .catch((errors) => {
           this.errors.record(errors.response.data.errors);
