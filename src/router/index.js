@@ -151,6 +151,16 @@ const routes = [
         }
     },
 
+    // Student - Profile Routes
+    {
+        path: '/student/announcement',
+        name: 'studentAnnouncement',
+        component: () => import(/* webpackChunkName: "components-tabs" */ '../views/master/student/announcement/announcement.vue'),
+        meta: {
+            requiresAuth: true,
+            is_student: true
+        }
+    },
 
      // Public Routes with Authorization
     {
