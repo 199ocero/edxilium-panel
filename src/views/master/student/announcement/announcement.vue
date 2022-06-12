@@ -85,8 +85,15 @@
               <template #cell(instructor)="data">
                 <span>{{ data.item.instructor.first_name }} {{ data.item.instructor.last_name }}</span>
               </template>
+              <template #cell(status)="data">
+                <b-badge variant="success" v-if="data.item.status == 'Complete'"> Complete </b-badge>
+                <b-badge variant="danger" v-else> Incomplete </b-badge>
+              </template>
               <template #cell(action)="data">
-                <b-button size="sm" pill variant="primary" @click="completeAnnouncement(data.item.id)">Complete</b-button>
+                <b-button size="sm mr-3" pill variant="secondary" v-b-modal.announcementModal @click="announcementDetails(data.item.id)">Details</b-button>
+
+                <b-button size="sm" pill variant="dark" v-if="data.item.status == 'Complete'" @click="incompleteAnnouncement(data.item.id)">Incomplete</b-button>
+                <b-button size="sm" pill variant="primary" v-else @click="completeAnnouncement(data.item.id)">Complete</b-button>
               </template>
             </b-table>
 
@@ -135,6 +142,36 @@
       </div>
       <vue-progress-bar></vue-progress-bar>
     </div>
+    <!--Modal for Announcement Details-->
+    <b-modal id="announcementModal" title="Announcement Details" centered hide-footer>
+      <p>
+        <span v-if="form.current_status == 'Complete'" style="color: #009688">Status: <b-badge variant="success"> Complete </b-badge></span>
+        <span v-else style="color: #009688">Status: <b-badge variant="danger"> Incomplete </b-badge></span>
+      </p>
+      <p><span style="color: #009688">Due Date:</span> {{ moment.utc(form.deadline).format('MMMM D, YYYY') }}</p>
+      <p>
+        <span style="color: #009688">Closing Time:</span> <span>{{ moment.utc(form.deadline).format('h:mm A') }}</span>
+      </p>
+      <p>
+        <span style="color: #009688">Activity Title:</span> <span>{{ form.act_title }}</span>
+      </p>
+      <p>
+        <span style="color: #009688">Instruction:</span>
+      </p>
+      <p style="white-space: pre-line">
+        {{ form.instruction }}
+      </p>
+      <p>
+        <span style="color: #009688">Activity Link:</span><span>{{ form.act_link }}</span>
+      </p>
+      <p>
+        <span style="color: #009688">Attachment:</span><span>{{ form.attachment }}</span>
+      </p>
+
+      <div class="d-flex flex-wrap justify-content-center justify-content-sm-end">
+        <b-button variant="danger" class="mt-3 m-1" @click="$bvModal.hide('announcementModal')">Close</b-button>
+      </div>
+    </b-modal>
   </div>
 </template>
 
@@ -154,6 +191,7 @@ export default {
         section: '',
         subject: '',
         instructor: '',
+        current_status: '',
       },
       errors: new Errors(),
       items: [],
@@ -182,6 +220,7 @@ export default {
         { key: 'section', label: 'Section' },
         { key: 'subject', label: 'Subject' },
         { key: 'instructor', label: 'Instructor' },
+        { key: 'status', label: 'Status' },
         { key: 'action', label: 'Actions', class: 'actions text-center' },
       ];
       let fetchTodo = async () => {
@@ -204,30 +243,9 @@ export default {
 
       fetchTodo();
     },
-    addAnnouncement() {
-      this.$Progress.start();
+    announcementDetails(id) {
       this.$http
-        .post(`/api/announcement/${this.form.sectionID}/${this.form.subjectID}`, this.form, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        })
-        .then(() => {
-          this.$toaster.success('Announcement Created Successfuly!');
-          this.$nextTick(() => {
-            this.$bvModal.hide('announcementModal');
-          });
-          this.bind_data();
-          this.$Progress.finish();
-        })
-        .catch((errors) => {
-          this.errors.record(errors.response.data.errors);
-          this.$Progress.fail();
-        });
-    },
-    editAnnouncement(id) {
-      this.$http
-        .get('/api/announcement/' + id, {
+        .get('/api/student/check/announcement/' + id, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -239,52 +257,19 @@ export default {
           this.form.instruction = response.data.data.instruction;
           this.form.act_link = response.data.data.act_link;
           this.form.attachment = response.data.data.attachment;
+          this.form.current_status = response.data.status;
         })
         .catch((errors) => {
           this.errors.record(errors.response.data.errors);
         });
     },
-    deleteAnnouncement(id) {
-      this.$swal
-        .fire({
-          title: 'Are you sure?',
-          text: "You won't be able to revert this!",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Yes, delete it!',
-        })
-        .then((result) => {
-          if (result.isConfirmed) {
-            //Send delete request
-            this.$Progress.start();
-            this.$http
-              .delete('/api/announcement/' + id, {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-              })
-              .then(() => {
-                this.$swal.fire('Deleted!', 'Announcement has been deleted.', 'success');
-                this.bind_data();
-                this.$Progress.finish();
-              })
-              .catch(() => {
-                this.$swal.fire('Failed!', 'There was something wrong.', 'warning');
-                this.$Progress.fail();
-              });
-          }
-        });
-    },
-    updateAnnouncement() {
-      var id = this.form.id;
+    completeAnnouncement(id) {
       let self = this;
       var axios = require('axios');
       var data = this.form;
       var config = {
-        method: 'put',
-        url: '/api/announcement/' + id,
+        method: 'post',
+        url: `/api/student/complete/announcement/${id}`,
         headers: {
           Authorization: 'Bearer ' + localStorage.getItem('token'),
         },
@@ -293,10 +278,7 @@ export default {
       self.$Progress.start();
       axios(config)
         .then(function () {
-          self.$toaster.success('Announcement Update Successfuly!');
-          self.$nextTick(() => {
-            self.$bvModal.hide('announcementEditModal');
-          });
+          self.$toaster.success('Announcement Completed Successfuly!');
           self.bind_data();
           self.$Progress.finish();
         })
@@ -305,29 +287,23 @@ export default {
           self.$Progress.fail();
         });
     },
-    clearDateError() {
-      this.errors.clear('deadline');
-    },
-    announcementResetModal() {
-      this.form.deadline = 'deadline';
-      this.form.deadline = '';
-      this.errors.clear('deadline');
-
-      this.form.act_title = 'act_title';
-      this.form.act_title = '';
-      this.errors.clear('act_title');
-
-      this.form.instruction = 'instruction';
-      this.form.instruction = '';
-      this.errors.clear('instruction');
-
-      this.form.act_link = 'act_link';
-      this.form.act_link = '';
-      this.errors.clear('act_link');
-
-      this.form.attachment = 'attachment';
-      this.form.attachment = '';
-      this.errors.clear('attachment');
+    incompleteAnnouncement(id) {
+      this.$Progress.start();
+      this.$http
+        .delete(`/api/student/incomplete/announcement/${id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+        .then(() => {
+          this.$toaster.success('Announcement Incomplete Successfuly!');
+          this.bind_data();
+          this.$Progress.finish();
+        })
+        .catch(() => {
+          this.$swal.fire('Failed!', 'There was something wrong.', 'warning');
+          this.$Progress.fail();
+        });
     },
     on_filtered(filtered_items) {
       this.refresh_table(filtered_items.length);

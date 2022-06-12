@@ -403,7 +403,7 @@ export default {
       var axios = require('axios');
       var data = this.form;
       var config = {
-        method: 'put',
+        method: 'post',
         url: `/api/student/drop/${id}/${this.form.sectionID}/${this.form.subjectID}`,
         headers: {
           Authorization: 'Bearer ' + localStorage.getItem('token'),
