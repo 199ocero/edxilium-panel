@@ -73,17 +73,12 @@
               :show-empty="true"
               @filtered="on_filtered"
             >
-              <template #cell(email_status)="data">
-                <b-badge variant="success" v-if="data.item.email_verified_at != null"> Verified </b-badge>
-                <b-badge variant="secondary" v-else> Pending </b-badge>
-              </template>
               <template #cell(account)="data">
                 <b-badge variant="success" v-if="data.item.status == 'activated'"> Activated </b-badge>
                 <b-badge variant="danger" v-else> Deactivated </b-badge>
               </template>
               <template #cell(action)="data">
                 <b-button size="sm mr-3" pill variant="dark" v-b-modal.instructorEditModal @click="editInstructor(data.item.id)">Edit</b-button>
-                <b-button size="sm mr-3" pill variant="info" v-if="data.item.email_verified_at == null" @click="resendEmail(data.item.id)">Resend Verification</b-button>
                 <b-button size="sm mr-3" pill variant="primary" v-if="data.item.status == 'activated'" @click="deactivateInstructor(data.item.id)">Deactivate</b-button>
                 <b-button size="sm mr-3" pill variant="primary" v-if="data.item.status == 'deactivated'" @click="activateInstructor(data.item.id)">Activate</b-button>
                 <b-button size="sm" pill variant="danger" @click="deleteInstructor(data.item.id)">Delete</b-button>
@@ -254,7 +249,6 @@ export default {
       this.columns = [
         { key: 'role', label: 'Role' },
         { key: 'email', label: 'Email Address' },
-        { key: 'email_status', label: 'Email Status' },
         { key: 'account', label: 'Account Status' },
         { key: 'action', label: 'Actions', class: 'actions text-center' },
       ];
@@ -294,7 +288,6 @@ export default {
           });
           this.bind_data();
           this.$Progress.finish();
-          this.$swal.fire('Email Sent', 'Email verification sent!', 'success');
         })
         .catch((errors) => {
           this.errors.record(errors.response.data.errors);
@@ -415,39 +408,6 @@ export default {
         .catch(function (errors) {
           self.errors.record(errors.response.data.errors);
           self.$Progress.fail();
-        });
-    },
-    resendEmail(id) {
-      this.$swal
-        .fire({
-          title: 'Are you sure?',
-          text: 'This will resend an email verification to this user.',
-          icon: 'info',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Yes, send it!',
-        })
-        .then((result) => {
-          if (result.isConfirmed) {
-            // Resend email
-            this.$Progress.start();
-            this.$http
-              .get('/api/email/resend/' + id, {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem('token')}`,
-                },
-              })
-              .then(() => {
-                this.$swal.fire('Sent!', 'Email verification sent!', 'success');
-                this.bind_data();
-                this.$Progress.finish();
-              })
-              .catch(() => {
-                this.$swal.fire('Failed!', 'There was something wrong.', 'warning');
-                this.$Progress.fail();
-              });
-          }
         });
     },
     deactivateInstructor(id) {

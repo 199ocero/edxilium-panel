@@ -1,33 +1,33 @@
 <template>
-    <div :class="[$store.state.layout_style, $store.state.menu_style]">
-        <component v-bind:is="layout"></component>
-    </div>
+  <div :class="[$store.state.layout_style, $store.state.menu_style]">
+    <component v-bind:is="layout"></component>
+  </div>
 </template>
 <script>
-    // layouts
-    import appLayout from './layouts/app-layout.vue';
-    import authLayout from './layouts/auth-layout.vue';
+// layouts
+import appLayout from './layouts/app-layout.vue';
+import authLayout from './layouts/auth-layout.vue';
 
-    import '@/assets/sass/app.scss';
+import '@/assets/sass/app.scss';
 
-    export default {
-        metaInfo: {
-            title: 'Sales Admin',
-            titleTemplate: '%s | edxilium - A School Management System'
-        },
-        components: {
-            app: appLayout,
-            auth: authLayout
-        },
-        computed: {
-            layout() {
-                return this.$store.getters.layout;
-            }
-        },
-        data() {
-            return {};
-        },
-        mounted() {},
-        methods: {}
-    };
+export default {
+  metaInfo: {
+    title: 'Edxilium Admin',
+    titleTemplate: '%s | Edxilium - A School Management System',
+  },
+  components: {
+    app: appLayout,
+    auth: authLayout,
+  },
+  computed: {
+    layout() {
+      return this.$store.getters.layout;
+    },
+  },
+  data() {
+    return {};
+  },
+  mounted() {},
+  methods: {},
+};
 </script>

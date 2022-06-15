@@ -286,7 +286,10 @@ export default {
         localStorage.setItem('role', response.data.role);
       })
       .catch((errors) => {
-        console.log(errors);
+        if (errors) {
+          localStorage.removeItem('role');
+          localStorage.removeItem('token');
+        }
       });
 
     // default menu selection on refresh
